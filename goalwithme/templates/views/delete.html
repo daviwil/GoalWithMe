@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Delete {{ typeName | capitalize }}{% endblock %}
+{% block content %}
+<div data-role="page">
+	{{ macros.header("Confirm Delete") }}
+	<div data-role="content">
+		<p>Are you sure you want to delete this {{ typeName }}?</p>
+		<div data-role="controlgroup" data-type="vertical"> 
+			<a href="#" data-theme="c" data-role="button" data-icon="check">Yes</a> 
+			<a href="#" data-theme="c" data-role="button" data-icon="delete">No</a> 
+		</div> 
+	</div>
+</div>
+{% endblock %}

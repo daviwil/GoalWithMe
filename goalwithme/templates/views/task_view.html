@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Task Page{% endblock %}
+
+{% block head %}
+    <script type="text/javascript"> 
+    /* <![CDATA[ */
+    $(function() {
+        /** This code runs when everything has been loaded on the page */
+        /* Inline sparklines take their values from the contents of the tag */
+        $('.taskchart').sparkline('html', {type: 'bar', barColor: '#009933'} ); 
+    });
+    /* ]]> */
+    </script>
+{% endblock %}
+
+{% block content %}
+
+{% call macros.create_page("main") -%}
+{{ macros.header("Task Details", true) }}
+
+{% call macros.toolbar() -%}
+<div data-role="controlgroup" data-type="horizontal"> 
+	<a href="{{ url_for('task', id = task.key().id(), action = 'edit') }}" data-theme="c" data-role="button" data-icon="gear">Edit</a> 
+	<a href="{{ url_for('task', id = task.key().id(), action = 'delete') }}" data-theme="c" data-role="button" data-icon="delete" data-rel="dialog" data-transition="slidedown">Delete</a> 
+</div> 
+{%- endcall %}
+
+<div data-role="content">
+
+	{{ macros.show_flashes() }}
+
+	<h2>Task Details</h2>
+
+	<p>Name: {{ task.Name }}</p>
+	<p>Difficulty: {{ task.Difficulty }}</p>
+	<p>Chart: <span class="taskchart">5,3,4,2,1,5</span></p>
+</div>
+
+{%- endcall %}
+
+{% endblock %}

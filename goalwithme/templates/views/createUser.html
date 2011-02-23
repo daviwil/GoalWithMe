@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Create a User Account{% endblock %}
+{% block content %}
+<div data-role="page">
+	{{ macros.header("Create a User Account") }}
+	<div data-role="content">
+		<p>Your user account serves as your profile on the site and all of your goal tracking information will be associated with it.  We will use your address to communicate with you and provided added functionality, but we will never sell your e-mail address to a third party.</p>
+		<form method="POST" action="/createUser/">
+		    {{ form.csrf }}
+		    {{ macros.render_field(form.UserName) }}
+		    {{ macros.render_field(form.EmailAddress) }}
+		    {{ macros.render_field(form.FullName) }}
+		    {{ macros.render_field(form.HomeTown) }}
+		    {{ macros.render_field(form.AcceptTos, false) }}
+		    <input type="submit" value="Create Account" data-role="button" data-icon="check" />
+		</form>
+	</div>
+	<div data-role="footer">
+		<h4></h4>
+	</div>
+</div>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% set capitalType = typeName | capitalize %}
+{% block title %}{{ actionName }} {{ capitalType }}{% endblock %}
+{% block content %}
+<div data-role="page">
+	{{ macros.header(actionName ~ " " ~ capitalType, true) }}
+	<div data-role="content">
+		<form method="{{ formMethod }}" action="{{ formUrl }}">
+		{{ form.csrf }}
+		{% block editForm scoped %}{% endblock %}
+		<div data-role="controlgroup" data-type="horizontal"> 
+			<button type="submit" data-theme="c" data-icon="check" data-inline="true" name="submit" value="submit-value">Save</button>
+		    <a href="#" data-theme="c" data-role="button" data-icon="delete" data-inline="true" data-rel="back">Cancel</a>
+		</div>
+	</div>
+	<div data-role="footer">
+		<h4></h4>
+	</div>
+</div>
+{% endblock %}

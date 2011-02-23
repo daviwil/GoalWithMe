@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Link Tasks to Goal{% endblock %}
+
+{% block content %}
+
+{% call macros.create_page("main") -%}
+{{ macros.header("Goals", true) }}
+
+<div data-role="content">
+	<div data-role="collapsible" data-theme="c" data-collapsed="true">
+		<h4>Filter Options</h4>
+		<div class="ui-bar ui-bar-c">
+			Nothing here yet.
+		</div>
+	</div>
+	<p />
+	<form method="POST" action="/goals/{{ goal.key().id() }}/tasks/">
+		{{ form.csrf }}
+		{{ macros.render_field(form.TaskList) }}
+		<div data-role="controlgroup" data-type="horizontal"> 
+			<button type="submit" data-theme="c" data-icon="check" data-inline="true" name="submit" value="submit-value">Save</button>
+		    <a href="/goals/{{ goal.key().id() }}" data-theme="c" data-role="button" data-icon="delete" data-inline="true" data-rel="back">Cancel</a>
+		</div>		
+	</form>
+</div>
+
+{%- endcall %}
+
+{% endblock %}

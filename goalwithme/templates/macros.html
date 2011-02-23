@@ -1,0 +1,94 @@
+{% macro create_page(id, url=false, style="a") -%}
+    <div data-role="page" id="{{ id }}" {% if url %}data-url="{{ url }}"{% endif %}>
+        {{ caller() }}
+        <div data-role="footer">
+            <h4></h4>
+        </div>
+    </div>
+{%- endmacro %}
+
+{% macro header(text, showHome=false) -%}
+        <div data-role="header">
+            <h1>{{ text }}</h1>
+            {% if showHome %}
+            <a href="/dashboard/" data-icon="home" data-iconpos="notext" class="ui-btn-right"></a>
+            {% endif %}
+        </div>
+{%- endmacro %}
+
+{% macro toolbar(text) -%}
+        <div class="ui-bar ui-bar-c">
+            {{ caller() }}
+        </div>
+{%- endmacro %}
+
+{% macro link_button(link, label) -%}
+    <a href="{{ link }}" data-role="button">{{ label }}</a>
+{%- endmacro %}
+
+{% macro dialog_button(link, label) -%}
+    <a href="{{ link }}" data-role="button" data-rel="dialog" data-transition="slidedown">{{ label }}</a>
+{%- endmacro %}
+
+{% macro text_field(id, label, value="", style="c") -%}
+    <div data-role="fieldcontain">
+        <label for="{{ id }}">{{ label }}</label>
+        <input type="text" name="{{ id }}" id="{{ id }}" value="{{ value }}" />
+    </div>
+{%- endmacro %}
+
+{% macro select_box(id, label, value="", style="c") -%}
+    <div data-role="fieldcontain">
+        <label for="{{ id }}" class="select">{{ label }}</label>
+        <select name="{{ id }}" id="{{ id }}">
+            {{ caller() }}
+        </select>
+    </div>
+{%- endmacro %}
+
+{% macro select_option(value, label, selectedValue="") -%}
+            <option value="{{ value }}">{{ label }}</option>
+{%- endmacro %}
+
+{% macro show_flashes() -%}
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    <div class="ui-bar ui-bar-e">
+        <ul class=flashes>
+            {% for message in messages %}
+            <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+  {% endif %}
+{% endwith %}
+{%- endmacro %}
+
+{% macro render_field(field, showRequiredStar=true) -%}
+    <div data-role="fieldcontain">
+        {{ field.label }}
+        {{ field(**kwargs)|safe }}{% if field.flags.required and showRequiredStar %} *{% endif %}
+        {% if field.errors %}
+          <div class="ui-bar ui-bar-e">
+              <ul>
+              {% for error in field.errors %}<li>{{ error }}{% endfor %}
+              </ul>
+          </div>
+        {% endif %}
+    </div>
+{%- endmacro %}
+
+{% macro render_task_item(task) -%}
+        <li>
+            <a href="{{ url_for('task', id=task.key().id())}}">{{ task.Name }}</a>
+            <span class="ui-li-count">{{ task.WeekDuration }} spent this week</span>
+        </li>
+{%- endmacro %}
+
+{% macro render_goal_item(goal) -%}
+        <li>
+            <a href="{{ url_for('goal', id=goal.key().id())}}">{{ goal.Name }}</a>
+            <span class="ui-li-count">73% complete this week</span>
+        </li>
+{%- endmacro %}
+

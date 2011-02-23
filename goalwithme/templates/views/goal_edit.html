@@ -1,0 +1,10 @@
+{% extends "views/edit.html" %}
+{% block editForm %}
+
+{{ macros.render_field(form.Name) }}
+{{ macros.render_field(form.Description) }}
+{{ macros.render_field(form.Unit) }}
+{{ macros.render_field(form.Contexts) }}
+{{ macros.render_field(form.IsPublic) }}
+
+{% endblock %}

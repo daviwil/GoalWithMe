@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Tasks{% endblock %}
+
+{% block content %}
+
+{% call macros.create_page("main") -%}
+{{ macros.header("Tasks", true) }}
+
+{% call macros.toolbar() -%}
+<div data-role="controlgroup" data-type="horizontal"> 
+	<a href="/tasks/create/" data-theme="c" data-role="button" data-icon="plus">Create Task</a> 
+</div> 
+{%- endcall %}
+
+<div data-role="content">
+	<div data-role="collapsible" data-theme="c" data-collapsed="true">
+		<h4>Filter Options</h4>
+		<div class="ui-bar ui-bar-c">
+			Nothing here yet.
+		</div>
+	</div>
+	<p />
+	<ul data-role="listview" data-filter="true" data-theme="d"> 
+		{% for task in tasks %}
+		{{ macros.render_task_item(task) }}
+		{% endfor %}
+	</ul>
+</div>
+
+{%- endcall %}
+
+{% endblock %}

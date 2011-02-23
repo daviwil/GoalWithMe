@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}GoalWithMe{% endblock %}
+
+{% block content %}
+{% call macros.create_page("main") %}
+<div data-role="header">
+	<h4></h4>
+</div>
+<div data-role="content">
+	<div align="center"><h2>Welcome to GoalWithMe!</h2></div>
+	<div class="ui-bar ui-bar-a">
+		<p>GoalWithMe is a site for tracking the things that you want to accomplish.</p>
+	</div>
+
+	{% if signInUrl %}
+	<a href="{{ signInUrl }}" data-role="button" rel="external">Sign In with Google Account</a>
+	{% elif nickName %}
+	<p>Hello, {{ nickName }}!  You must be new here.  Click the button below to create a new user account.<p>
+	<a href="/createUser/" data-role="button" data-theme="e">Create User Account</a>
+	{% elif userProfile %}
+	<p>Welcome back, {{ userProfile.UserName }}!</p>
+	<a href="/dashboard/" data-role="button" data-theme="e">Go to Dashboard</a>
+	{% endif %}
+
+</div>
+{% endcall %}
+{% endblock %}

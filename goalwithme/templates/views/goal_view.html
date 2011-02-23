@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Goal Details{% endblock %}
+
+{% block head %}
+    <script type="text/javascript"> 
+    /* <![CDATA[ */
+    $(function() {
+        /** This code runs when everything has been loaded on the page */
+        /* Inline sparklines take their values from the contents of the tag */
+        $('.taskchart').sparkline('html', {type: 'bar', barColor: '#009933'} ); 
+    });
+    /* ]]> */
+    </script>
+{% endblock %}
+
+{% block content %}
+
+{% call macros.create_page("main") -%}
+{{ macros.header("Goal Details", true) }}
+
+{% call macros.toolbar() -%}
+<div data-role="controlgroup" data-type="horizontal"> 
+	<a href="{{ url_for('goal', id = goal.key().id(), action = 'edit') }}" data-theme="c" data-role="button" data-icon="gear">Edit</a> 
+	<a href="{{ url_for('goal', id = goal.key().id(), action = 'delete') }}" data-theme="c" data-role="button" data-icon="delete" data-rel="dialog" data-transition="slidedown">Delete</a> 
+    <a href="{{ url_for('goal', id = goal.key().id(), action = 'tasks') }}" data-theme="c" data-role="button" data-icon="gear">Link Tasks</a> 
+    <a href="{{ url_for('goal', id = goal.key().id(), action = 'entry') }}" data-theme="c" data-role="button" data-icon="plus">New Entry</a>     
+</div> 
+{%- endcall %}
+
+<div data-role="content">
+    <div class="ui-body ui-body-c">
+    	<strong>Name</strong>: {{ goal.Name }}<br />
+        <strong>Description</strong>:<br />
+        {{ goal.Description }}<br />
+    	<strong>Chart</strong>: <span class="taskchart">5,3,4,2,1,5</span>
+    </div>
+
+    <ul data-role="listview" data-inset="true" data-theme="d" data-dividertheme="c">
+        <li data-role="list-divider">Recent Entries</li>
+        <li>No recent entries.</li>
+    </ul>
+
+    <ul data-role="listview" data-inset="true" data-theme="d" data-dividertheme="c">
+        <li data-role="list-divider">Tasks</li>
+        {% if linkedTasks|count > 0 %}
+            {% for task in linkedTasks %}
+            {{ macros.render_task_item(task) }}
+            {% endfor %}
+        {% else %}
+            <li>No tasks assigned.</li>
+        {% endif %}
+    </ul>
+</div>
+
+{%- endcall %}
+
+{% endblock %}

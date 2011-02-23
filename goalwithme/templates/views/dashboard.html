@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}GoalWithMe - Dashboard{% endblock %}
+
+{% block content %}
+{% call macros.create_page("main") %}
+{{ macros.header("Dashboard") }}
+
+{% call macros.toolbar() -%}
+<div data-role="controlgroup" data-type="horizontal"> 
+	<a href="/goals/" data-theme="c" data-role="button" data-icon="star">View Goals</a> 
+	<a href="/tasks/" data-theme="c" data-role="button" data-icon="check">View Tasks</a>
+</div>
+{%- endcall %}
+
+<div data-role="content">
+	<!--
+	<div data-role="fieldcontain">
+    	<label for="search">Search:</label>
+    	<input type="search" name="password" id="search" value="" />
+	</div>
+	-->
+	<div class="ui-body ui-body-b">
+		<strong>Quick Stats for daviwil</strong><br />
+		Progress today: 12 completed, 1 h 37 m total<br />
+		Progress this week: 34 completed, 5 h 42 m total<br />
+	</div>
+	<ul data-role="listview" data-inset="true" data-theme="d" data-dividertheme="e">
+		<li data-theme="e" data-icon="gear">
+			<a href="/">Pinned Tasks</a>
+		</li>
+	</ul>	
+	<ul data-role="listview" data-inset="true" data-theme="d" data-dividertheme="c">
+		<li data-role="list-divider">Quick Actions</li>
+		<li><a href="/dashboard/findtask/">Find a Task</a></li>
+		<li><a href="/tasks/create/">Create a Task</a></li>
+		<li><a href="/goals/create/">Create a Goal</a></li>
+		<li><a href="/logout/" rel="external">Sign Out</a></li>
+	</ul>
+</div>
+{% endcall %}
+{% endblock %}
