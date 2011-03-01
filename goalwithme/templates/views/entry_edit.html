@@ -1,0 +1,24 @@
+{% extends "views/edit.html" %}
+{% block editForm %}
+    <div data-role="fieldcontain" class="select">
+        Which task did you complete?
+        {{ form.CompletedTask|safe }}
+        {{ macros.render_field_errors(form.CompletedTask) }}
+    </div>
+{{ macros.render_field(form.Notes) }}
+    <div data-role="fieldcontain">
+        How much did you complete (Unit: {{ unitLabel }})?
+        {{ form.Quantity|safe }}
+        {{ macros.render_field_errors(form.Quantity) }}
+    </div>
+    <div data-role="fieldcontain" class="select">
+        {{ form.Quality.label }}
+        {{ form.Quality|safe }}
+        {{ macros.render_field_errors(form.Quality) }}
+    </div>
+    <div data-role="fieldcontain" class="select">
+        {{ form.Difficulty.label }}
+        {{ form.Difficulty|safe }}
+        {{ macros.render_field_errors(form.Difficulty) }}
+    </div> 
+{% endblock %}

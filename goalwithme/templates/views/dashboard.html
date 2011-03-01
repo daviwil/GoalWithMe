@@ -2,6 +2,10 @@
 
 {% block title %}GoalWithMe - Dashboard{% endblock %}
 
+{% block head %}
+{{ macros.render_chart_script() }}
+{% endblock %}
+
 {% block content %}
 {% call macros.create_page("main") %}
 {{ macros.header("Dashboard") }}
@@ -21,18 +25,21 @@
 	</div>
 	-->
 	<div class="ui-body ui-body-b">
-		<strong>Quick Stats for daviwil</strong><br />
+		<strong>Quick Stats for daviwil on {{ currentDate|dateformat }}</strong><br />
+		<!--
 		Progress today: 12 completed, 1 h 37 m total<br />
 		Progress this week: 34 completed, 5 h 42 m total<br />
+		-->
+        {{ macros.render_quick_stats(dayStats, weekStats, weekChartData) }}
 	</div>
 	<ul data-role="listview" data-inset="true" data-theme="d" data-dividertheme="e">
 		<li data-theme="e" data-icon="gear">
-			<a href="/">Pinned Tasks</a>
+			<a href="/dashboard/pinned/">Pinned Items</a>
 		</li>
 	</ul>	
 	<ul data-role="listview" data-inset="true" data-theme="d" data-dividertheme="c">
 		<li data-role="list-divider">Quick Actions</li>
-		<li><a href="/dashboard/findtask/">Find a Task</a></li>
+		<!--<li><a href="/dashboard/findtask/">Find a Task</a></li>-->
 		<li><a href="/tasks/create/">Create a Task</a></li>
 		<li><a href="/goals/create/">Create a Goal</a></li>
 		<li><a href="/logout/" rel="external">Sign Out</a></li>

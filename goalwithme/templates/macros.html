@@ -64,10 +64,7 @@
 {% endwith %}
 {%- endmacro %}
 
-{% macro render_field(field, showRequiredStar=true) -%}
-    <div data-role="fieldcontain">
-        {{ field.label }}
-        {{ field(**kwargs)|safe }}{% if field.flags.required and showRequiredStar %} *{% endif %}
+{% macro render_field_errors(field) -%}
         {% if field.errors %}
           <div class="ui-bar ui-bar-e">
               <ul>
@@ -75,6 +72,13 @@
               </ul>
           </div>
         {% endif %}
+{%- endmacro %}
+
+{% macro render_field(field, showRequiredStar=true) -%}
+    <div data-role="fieldcontain">
+        {{ field.label }}
+        {{ field(**kwargs)|safe }}{% if field.flags.required and showRequiredStar %} *{% endif %}
+        {{ render_field_errors(field) }}
     </div>
 {%- endmacro %}
 
@@ -92,3 +96,78 @@
         </li>
 {%- endmacro %}
 
+{% macro render_chart_script(monthStats = None, yearStats = None) -%}
+    <script type="text/javascript"> 
+    /* <![CDATA[ */
+    //$('div').live('pagebeforeshow',function(event, ui){
+    $(function() {
+        /** This code runs when everything has been loaded on the page */
+        /* Inline sparklines take their values from the contents of the tag */
+        //alert("loaded");
+        var qualityColors = ['#fb6b00', '#d1aa03', '#9ac20a', '#00c317', '#00ab56'];
+        var difficultyColors = ['#74ebff', '#00a4fb', '#aa69ca', '#fd51b0', '#e70000'];
+        var qualityPieOptions = {type: 'pie', height: 17, sliceColors: qualityColors };
+        var difficultyPieOptions = {type: 'pie', height: 17, sliceColors: difficultyColors };
+        $('.dayqualitychart').sparkline('html', qualityPieOptions); 
+        $('.daydifficultychart').sparkline('html',  difficultyPieOptions);        
+        $('.weekqualitychart').sparkline('html', qualityPieOptions); 
+        $('.weekdifficultychart').sparkline('html', difficultyPieOptions);
+        $('.weekchart').sparkline('html', {type: 'bar', barColor: '#009933', chartRangeMin: 0, height: 15 } );
+
+        {% if monthStats %}        
+        $('.monthqualitychart').sparkline('html', qualityPieOptions); 
+        $('.monthdifficultychart').sparkline('html', difficultyPieOptions);         
+        $('.monthchart').sparkline('html', {type: 'line', lineColor: '#009933', chartRangeMin: 0, width: 60, height: 15, spotSize: 0 } ); 
+        {% endif %}
+
+        {% if yearStats %}
+        $('.yearqualitychart').sparkline('html', qualityPieOptions); 
+        $('.yeardifficultychart').sparkline('html', difficultyPieOptions);        
+        $('.yearchart').sparkline('html', {type: 'bar', barColor: '#009933', chartRangeMin: 0, height: 15 } ); 
+        {% endif %}
+    });
+
+    /* ]]> */
+    </script>
+{%- endmacro %}
+
+{% macro render_quick_stats(dayStats, weekStats, weekChartData, monthStats, monthChartData, yearStats, yearChartData) -%}
+        <strong>Today:</strong>
+        {% if dayStats %}        
+        {% if dayStats.TotalCount %}{{ dayStats.TotalCount }} times{% endif %}
+        {% if dayStats.TotalMinutes %}{{ dayStats.TotalMinutes }} minutes{% endif %} 
+        <strong> / Difficulty:</strong> <span class="daydifficultychart">{{ dayStats.DifficultyCounters|join(', ') }}</span> {{ dayStats|avgdifficulty }}
+        <strong> / Quality:</strong> <span class="dayqualitychart">{{ dayStats.QualityCounters|join(', ') }}</span> {{ dayStats|avgquality }}
+        {% else %} No activity today.
+        {% endif %} 
+        <br />
+
+        <strong>This Week:</strong> 
+        {% if weekStats %}
+        <span class="weekchart">{{ weekChartData|join(', ') }}</span>
+        {% if weekStats and weekStats.TotalCount %}{{ weekStats.TotalCount }} times{% endif %}
+        {% if weekStats and weekStats.TotalMinutes %}{{ weekStats.TotalMinutes }} minutes{% endif %}
+        <strong> / Difficulty:</strong> <span class="weekdifficultychart">{{ weekStats.DifficultyCounters|join(', ') }}</span>  {{ weekStats|avgdifficulty }}
+        <strong> / Quality:</strong> <span class="weekqualitychart">{{ weekStats.QualityCounters|join(', ') }}</span>  {{ weekStats|avgquality }}
+        {% else %} No activity this week.
+        {% endif %}
+        <br />        
+
+        {% if monthStats %}        
+        <strong>In {{ monthStats.Month|monthname }}:</strong> <span class="monthchart">{{ monthChartData|join(', ') }}</span>
+        {% if weekStats and weekStats.TotalCount %}{{ weekStats.TotalCount }} times{% endif %}
+        {% if weekStats and weekStats.TotalMinutes %}{{ weekStats.TotalMinutes }} minutes{% endif %}
+        <strong> / Difficulty:</strong> <span class="monthdifficultychart">{{ monthStats.DifficultyCounters|join(', ') }}</span> {{ monthStats|avgdifficulty }}
+        <strong> / Quality:</strong> <span class="monthqualitychart">{{ monthStats.QualityCounters|join(', ') }}</span> {{ monthStats|avgquality }}
+        <br />
+        {% endif %}
+
+        {% if yearStats %}                
+        <strong>In {{yearStats.Year }}:</strong> <span class="yearchart">{{ yearChartData|join(', ') }}</span>
+        {% if yearStats.TotalCount %}{{ yearStats.TotalCount }} times{% endif %}
+        {% if yearStats.TotalMinutes %}{{ yearStats.TotalMinutes }} minutes{% endif %}
+        <strong> / Difficulty:</strong> <span class="yeardifficultychart">{{ yearStats.DifficultyCounters|join(', ') }}</span> {{ yearStats|avgdifficulty }}
+        <strong> / Quality:</strong> <span class="yearqualitychart">{{ yearStats.QualityCounters|join(', ') }}</span> {{ yearStats|avgquality }}        
+        <br />
+        {% endif %}
+{%- endmacro %}

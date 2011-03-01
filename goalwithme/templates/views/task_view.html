@@ -3,15 +3,7 @@
 {% block title %}Task Page{% endblock %}
 
 {% block head %}
-    <script type="text/javascript"> 
-    /* <![CDATA[ */
-    $(function() {
-        /** This code runs when everything has been loaded on the page */
-        /* Inline sparklines take their values from the contents of the tag */
-        $('.taskchart').sparkline('html', {type: 'bar', barColor: '#009933'} ); 
-    });
-    /* ]]> */
-    </script>
+{{ macros.render_chart_script(monthStats, yearStats) }}
 {% endblock %}
 
 {% block content %}
@@ -30,11 +22,29 @@
 
 	{{ macros.show_flashes() }}
 
-	<h2>Task Details</h2>
+    <div class="ui-body ui-body-b">
+    	<strong>Name:</strong> {{ task.Name }}</br>
+        <strong>Description:</strong><br />
+        {{ task.Description }}<br />
+    	<strong>Difficulty:</strong> {{ task.Difficulty|format_difficulty }}</br>
+        <strong>Created On:</strong> {{ task.DateCreated|dateformat }}</br>
+    	
+        <br />
+        <strong>Quick Stats</strong></br>
+        <hr />
+        {{ macros.render_quick_stats(dayStats, weekStats, weekChartData, monthStats, monthChartData, yearStats, yearChartData) }}
+    </div>
 
-	<p>Name: {{ task.Name }}</p>
-	<p>Difficulty: {{ task.Difficulty }}</p>
-	<p>Chart: <span class="taskchart">5,3,4,2,1,5</span></p>
+    <ul data-role="listview" data-inset="true" data-theme="d" data-dividertheme="c">
+        <li data-role="list-divider">Recent Entries</li>
+        {% if recentEntries %}
+            {% for entry in recentEntries %}
+            <li><a href="">{{ entry.DateCreated|dateformat }} - Goal: {{ entry.parent().Name }}</a></li>
+            {% endfor %}
+        {% else %}
+            <li>No recent entries.</li>
+        {% endif %}
+    </ul>
 </div>
 
 {%- endcall %}

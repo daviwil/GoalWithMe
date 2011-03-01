@@ -1,12 +1,17 @@
 import logging
 from flask import render_template, flash, session, url_for
+from datetime import datetime
 from goalwithme import app, forms
 
 from functools import wraps
 from google.appengine.api import users
+from google.appengine.ext.db import Key
 from flask import redirect, request
 
-from goalwithme.model import UserProfile, Task, Goal, TaskLink, GoalEntry
+from goalwithme.model import UserProfile, Task, Goal, TaskLink, GoalEntry, TaskUnits
+from goalwithme.stats import AddEntryToStats
+from goalwithme.tools import *
+from goalwithme.helpers import *
 
 def createInitialUser(user):
     profile = UserProfile(UserID = user.user_id())
@@ -72,7 +77,7 @@ def user():
         # TODO: Make sure username doesn't exist!
 
         # Create the new profile for the user and save it
-        newProfile = UserProfile(UserID = user.user_id())
+        newProfile = UserProfile(key_name = form.UserName.data, UserID = user.user_id())
         newProfile.UserName = form.UserName.data
         newProfile.EmailAddress = form.EmailAddress.data
         newProfile.FullName = form.FullName.data
@@ -92,27 +97,35 @@ def logout():
     return redirect(users.create_logout_url("/"))
 
 @app.route('/dashboard/')
+@app.route('/dashboard/<action>/')
 @login_required
-def dashboard():
-    return render_template('views/dashboard.html')
+def dashboard(action = None):
+    profile = getCurrentProfile()    
+    settings = GetDashboardSettings(profile, createIfNotFound=False)
+    dayStats = None
+    weekStats = None
+    weekChartData = None
+    pinnedItems = []
+    if settings:
+        today = datetime.now()
+        thisWeek = GetFirstDayOfWeek(today)
+        #recentEntries = GoalEntry.all().ancestor(profile).filter("CompletedTask =", thisTask).fetch(5)
+        weekStats = WeekStats.get_by_key_name(DayKey(thisWeek), parent=settings)
+        dayStats = DayStats.get_by_key_name(DayKey(today), parent=settings)
+        weekChartData = GetWeekChartData(thisWeek.day, DayStats.all().ancestor(settings).filter("WeekBeginDate =", thisWeek.date()).order("DayOfMonth"))
+        pinnedItems = db.get(settings.PinnedItems)
 
-def safeLower(str):
-    if str is not None:
-        return str.lower()
-    return str
+    return render_template('views/dashboard.html', 
+        dayStats = dayStats, weekStats = weekStats, currentDate = datetime.now(),
+        weekChartData = weekChartData, pinnedItems = pinnedItems)
 
-def createTask(request, profile):
+def showCreateTask(request, profile):
     form = forms.CreateTaskForm()
     if request.method == 'POST' and form.validate():
-        task = Task(parent = profile)
-        task.Name = form.Name.data
-        task.Description = form.Description.data
-        task.Unit = form.Unit.data
-        task.Difficulty = int(form.Difficulty.data)
-        task.TypicalDuration = form.TypicalDuration.data
-        task.IsPublic = form.IsPublic.data
-        task.Contexts = []
-        task.put()
+        taskKey = CreateTask(
+            form.Name.data, form.Description.data, form.Unit.data,
+            form.Difficulty.data, form.TypicalDuration.data, 
+            form.IsPublic.Data, [])
         return redirect(url_for('task', id = task.key().id()))
     return render_template(
         "views/task_edit.html", 
@@ -129,10 +142,15 @@ def task(id = None, action = None):
     profile = getCurrentProfile()
     if id is not None:
         # Make the action name lowercase
-        action = safeLower(action)
-        thisTask = Task.get_by_id(int(id), profile)        
+        action = SafeLower(action)
+        thisTask = Task.get_by_id(int(id), profile)
+
         if action is None:
-            return render_template('views/task_view.html', task = thisTask)
+            # TODO: Make this more efficient!
+            statsDict = LoadObjectStats(thisTask, datetime.now())
+            statsDict["task"] = thisTask
+            statsDict["recentEntries"] = GoalEntry.all().ancestor(profile).filter("CompletedTask =", thisTask).fetch(5)
+            return render_template('views/task_view.html', **statsDict)                
         elif action == "delete":
             return render_template('views/delete.html', task = thisTask, typeName = "task")
         elif action == "edit":
@@ -141,7 +159,7 @@ def task(id = None, action = None):
     elif action is not None:
         action = action.lower()
         if action == "create":
-            return createTask(request, profile)
+            return showCreateTask(request, profile)
 
     else:
         if request.method == "GET":
@@ -150,20 +168,17 @@ def task(id = None, action = None):
                 taskList = []
             return render_template("views/task_list.html", tasks = taskList)
         else:
-            return createTask(request, profile)
+            return showCreateTask(request, profile)
 
 #----- GOALS -----
 
-def createGoal(request, profile):
+def showCreateGoal(request, profile):
     form = forms.CreateGoalForm()
     if request.method == 'POST' and form.validate():
-        goal = Goal(parent = profile)
-        goal.Name = form.Name.data
-        goal.Unit = form.Unit.data
-        goal.Description = form.Description.data
-        goal.IsPublic = form.IsPublic.data
-        goal.Contexts = []
-        goal.put()
+        # TODO: Contexts!
+        goalKey = CreateGoal(
+            profile, form.Name.data, form.Unit.data, 
+            form.Description.data, form.IsPublic.data, [])
         return redirect(url_for('goal', id = goal.key().id()))
     return render_template(
         "views/goal_edit.html", 
@@ -209,22 +224,27 @@ def goal(id = None, action = None):
     profile = getCurrentProfile()
     if id is not None:
         # Make the action name lowercase
-        action = safeLower(action)
+        action = SafeLower(action)
         thisGoal = Goal.get_by_id(int(id), profile)
         if action is None:
             links = TaskLink.all().ancestor(thisGoal)
-            linkedTasks = [link.Task for link in links]
-            return render_template('views/goal_view.html', goal = thisGoal, linkedTasks = linkedTasks)
+            statsDict = LoadObjectStats(thisGoal, datetime.now())
+            statsDict["goal"] = thisGoal
+            statsDict["linkedTasks"] = [link.Task for link in links]
+            statsDict["recentEntries"] = GoalEntry.all().ancestor(profile).fetch(5)
+            return render_template('views/goal_view.html', **statsDict)
         elif action == "delete":
             return render_template('views/delete.html', goal = thisGoal, typeName = "goal")
         elif action == "edit":
             return render_template("views/goal_edit.html", goal = thisGoal, typeName = "goal")
         elif action == "tasks":
             return linkTasksToGoal(request, thisGoal, profile)
+        elif action == "entires":
+            return 
     elif action is not None:
         action = action.lower()
         if action == "create":
-            return createGoal(request, profile)
+            return showCreateGoal(request, profile)
 
     else:
         if request.method == "GET":
@@ -233,4 +253,47 @@ def goal(id = None, action = None):
                 goalList = []
             return render_template("views/goal_list.html", goals = goalList)
         else:
-            return createGoal(request, profile)            
+            return showCreateGoal(request, profile)
+
+def showCreateGoalEntry(request, profile):
+    form = forms.CreateGoalEntryForm()
+    goalId = request.args["goal"]
+    goal = Goal.get_by_id(int(goalId), profile)    
+    # TODO: Error if goal ID not found
+        
+    if request.method == 'POST': #and form.validate():    
+        taskKey = Key.from_path('Task', int(form.CompletedTask.data), parent=profile.key()) # = Task.get_by_id(int(form.CompletedTask.data), profile)
+        CreateGoalEntry(
+            profile, goal, taskKey, datetime.now(), form.Notes.data, 
+            form.Quantity.data, form.Quality.data, form.Difficulty.data)
+        return redirect(url_for('goal', id = goal.key().id()))
+
+    taskLinks = TaskLink.all().ancestor(goal)
+    tasks = [(link.Task.key().id(), link.Task.Name) for link in taskLinks] 
+    form.CompletedTask.choices = tasks
+    return render_template(
+        "views/entry_edit.html", 
+        typeName = "goal", actionName = "Create", 
+        formMethod = "POST", formUrl = "/entries/?goal=%s" % goalId,
+        form = form, unitLabel = TaskUnits.FieldLabels[goal.Unit])
+
+@app.route('/entries/', methods=['GET', 'POST'])
+@app.route('/entries/<action>/')
+@app.route('/entries/<int:id>/', methods=['GET', 'DELETE'])
+def goal_entry(id = None, action = None):
+    # Can create and delete entries, but not edit?
+    action = SafeLower(action)
+    profile = getCurrentProfile()
+    if id is not None:
+        if action is None:
+            # Show entry details
+            pass
+    elif action is not None:
+        if action == "create":
+            # Show creation page for entry, use query params to pre-populate
+            return showCreateGoalEntry(request, profile)
+    else:
+        if request.method == "POST":
+            return showCreateGoalEntry(request, profile)
+        # List all entries for user
+        pass

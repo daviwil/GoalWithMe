@@ -9,3 +9,36 @@ indexes:
 # manually, move them above the marker line.  The index.yaml file is
 # automatically uploaded to the admin console when you next deploy
 # your application using appcfg.py.
+
+- kind: DayStats
+  properties:
+  - name: WeekBeginDate
+  - name: DayOfMonth
+
+- kind: DayStats
+  ancestor: yes
+  properties:
+  - name: Month
+  - name: DayOfMonth
+
+- kind: DayStats
+  ancestor: yes
+  properties:
+  - name: WeekBeginDate
+  - name: DayOfMonth
+
+- kind: MonthStats
+  properties:
+  - name: Year
+  - name: Month
+
+- kind: MonthStats
+  ancestor: yes
+  properties:
+  - name: Month
+
+- kind: MonthStats
+  ancestor: yes
+  properties:
+  - name: Year
+  - name: Month

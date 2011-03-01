@@ -3,7 +3,15 @@
 {% block title %}Goal Details{% endblock %}
 
 {% block head %}
-{{ macros.render_chart_script(monthStats, yearStats) }}
+    <script type="text/javascript"> 
+    /* <![CDATA[ */
+    $(function() {
+        /** This code runs when everything has been loaded on the page */
+        /* Inline sparklines take their values from the contents of the tag */
+        $('.taskchart').sparkline('html', {type: 'bar', barColor: '#009933'} ); 
+    });
+    /* ]]> */
+    </script>
 {% endblock %}
 
 {% block content %}
@@ -15,34 +23,23 @@
 <div data-role="controlgroup" data-type="horizontal"> 
 	<a href="{{ url_for('goal', id = goal.key().id(), action = 'edit') }}" data-theme="c" data-role="button" data-icon="gear">Edit</a> 
 	<a href="{{ url_for('goal', id = goal.key().id(), action = 'delete') }}" data-theme="c" data-role="button" data-icon="delete" data-rel="dialog" data-transition="slidedown">Delete</a> 
-    <a href="{{ url_for('goal', id = goal.key().id(), action = 'tasks') }}" data-theme="c" data-role="button" data-icon="gear">Assign Tasks</a> 
-    <a href="{{ url_for('goal_entry', action = 'create', goal=goal.key().id()) }}" data-theme="c" data-role="button" data-icon="plus">New Entry</a>     
+    <a href="{{ url_for('goal', id = goal.key().id(), action = 'tasks') }}" data-theme="c" data-role="button" data-icon="gear">Link Tasks</a> 
+    <a href="{{ url_for('goal', id = goal.key().id(), action = 'entry') }}" data-theme="c" data-role="button" data-icon="plus">New Entry</a>     
 </div> 
 {%- endcall %}
 
 <div data-role="content">
     <div class="ui-body ui-body-c">
-    	<strong>Name:</strong> {{ goal.Name }}<br />
-        <strong>Description:</strong><br />
+    	<strong>Name</strong>: {{ goal.Name }}<br />
+        <strong>Description</strong>:<br />
         {{ goal.Description }}<br />
-        <strong>Created On:</strong> {{ goal.DateCreated|dateformat }}
-        </br></br>
-                
-        <strong>Quick Stats</strong></br>
-        <hr />
-        {{ macros.render_quick_stats(dayStats, weekStats, weekChartData, monthStats, monthChartData, yearStats, yearChartData) }}
+    	<strong>Chart</strong>: <span class="taskchart">5,3,4,2,1,5</span>
     </div>
 
     <ul data-role="listview" data-inset="true" data-theme="d" data-dividertheme="c">
         <li data-role="list-divider">Recent Entries</li>
-        {% if recentEntries %}
-            {% for entry in recentEntries %}
-            <li><a href="">{{ entry.DateCreated|dateformat }} - Goal: {{ entry.parent().Name }}</a></li>
-            {% endfor %}
-        {% else %}
-            <li>No recent entries.</li>
-        {% endif %}
-    </ul>        
+        <li>No recent entries.</li>
+    </ul>
 
     <ul data-role="listview" data-inset="true" data-theme="d" data-dividertheme="c">
         <li data-role="list-divider">Tasks</li>
